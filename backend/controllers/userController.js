@@ -2,13 +2,11 @@ const User = require("../models/User");
 const catchAsync = require("../utils/catchAsync");
 const cloudinary = require("cloudinary");
 const { createAndSaveTokenCookie } = require("../utils/createJwt");
+const ErrorHandler = require("../utils/ErrorHandler");
 
 exports.signUp = catchAsync(async (req, res, next) => {
   let user = await User.findOne({ email: req.body.email });
-  if (user)
-    return res
-      .status(400)
-      .json({ success: false, message: "User already exists" });
+  if (user) return next(new ErrorHandler("User already exists", 400));
 
   let public_id = "none";
   let url = "none";
@@ -36,3 +34,20 @@ exports.signUp = catchAsync(async (req, res, next) => {
   createAndSaveTokenCookie(newUser, 201, res);
 });
 
+exports.signIn = catchAsync(async (req, res, next) => {
+  const { email, password } = req.body;
+
+  if (!email || !password)
+    return next(new ErrorHandler("Please enter the email & password", 400));
+
+  let user = await User.findOne({ email }).select("+password");
+
+  if (!user)
+    return next(new ErrorHandler("User Dosent exists with this email", 401));
+
+  const correctPassword = await user.comparePassword(password);
+
+  if (!correctPassword) return next(new ErrorHandler("Invalid Password", 401));
+
+  createAndSaveTokenCookie(user, 200, res);
+});
