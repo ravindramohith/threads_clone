@@ -16,6 +16,9 @@ if (process.env.NODE_ENV !== "PRODUCTION") {
   });
 }
 
+// Routers
+app.use("/api/users", require("./routes/userRoutes"));
+
 // Error handling
 app.use(ErrorHandler);
 
