@@ -65,3 +65,11 @@ exports.signOut = catchAsync(async (req, res, next) => {
     message: "Successfully Signed Out",
   });
 });
+
+exports.getCurrentUser = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.user.id);
+  res.status(200).json({
+    success: true,
+    user,
+  });
+});
